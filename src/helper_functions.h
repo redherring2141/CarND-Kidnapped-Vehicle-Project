@@ -248,4 +248,19 @@ inline bool read_landmark_data(std::string filename,
   return true;
 }
 
+
+inline double multi_gauss_prob(double six, double siy, double obx, double oby, double mux, double muy)
+{
+  double gnorm;
+  gnorm = 1.0 / (2.0 * M_PI * six * siy);
+
+  double exponent;
+  exponent = ( pow(obx - mux, 2) / (2*pow(six, 2)) ) + ( pow(oby - muy, 2) / (2*pow(siy, 2)));
+
+  double weight = gnorm * exp(-exponent);
+
+  return weight;
+}
+
+
 #endif  // HELPER_FUNCTIONS_H_
