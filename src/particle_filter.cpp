@@ -41,16 +41,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[])
   particles.resize(num_particles);
   weights.resize(num_particles);
 
-  /*
-  this->num_particles = 1000;  // TODO: Set the number of particles
-  this->particles.clear();
-  this->weights.clear();
-  this->particles.resize(num_particles);
-  this->weights.resize(num_particles);
-  */
-
   // Set the sensor noise with normal distributions
-  //default_random_engine gen;
   normal_distribution<double> dist_x(0, std[0]);
   normal_distribution<double> dist_y(0, std[1]);
   normal_distribution<double> dist_theta(0, std[2]);
@@ -69,8 +60,6 @@ void ParticleFilter::init(double x, double y, double theta, double std[])
 	  P.y = P.y + dist_y(gen);
 	  P.theta = P.theta + dist_theta(gen);
 
-	  //particles.push_back(P);
-    //weights.push_back(P.weight);
     this->particles[idx] = P;
     this->weights[idx] = P.weight;
   }
@@ -92,49 +81,15 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
    */
 
   const double error_tolerance = 0.0001;
-  //default_random_engine gen;
 
 	normal_distribution<double> dist_x(0, std_pos[0]);
 	normal_distribution<double> dist_y(0, std_pos[1]);
 	normal_distribution<double> dist_theta(0, std_pos[2]);
 	
 	// Calculate prediction
-  /*
-  for (vector<Particle>::iterator particle=particles.begin(); particle!=particles.end(); particle++)
-  {
-    double pre_x, pre_y, pre_theta, fin_x, fin_y, fin_theta;
-    pre_x = particle->x;
-    pre_y = particle->y;
-    pre_theta = particle->theta;
-
-    // Assume bicycle model
-    if (fabs(yaw_rate) < error_tolerance)
-    {
-      fin_x = pre_x + velocity*delta_t*cos(pre_theta);
-      fin_y = pre_y + velocity*delta_t*sin(pre_theta);
-    }
-    else
-    {
-      fin_x = pre_x + velocity / yaw_rate * (sin(pre_theta + yaw_rate*delta_t) - sin(pre_theta));
-      fin_y = pre_y + velocity / yaw_rate * (cos(pre_theta) - cos(pre_theta + yaw_rate*delta_t));
-      fin_theta = pre_theta + yaw_rate * delta_t;
-    }
-
-    // Add random Gaussian noise
-    fin_x += dist_x(gen);
-    fin_y += dist_y(gen);
-    fin_theta += dist_theta(gen);
-
-    // Update particle after prediction
-    particle->x = fin_x;
-    particle->y = fin_y;
-    particle->theta = fin_theta;
-  }
-  */
-  
 	for (int idx_p=0; idx_p<num_particles; idx_p++)
 	{
-    if (fabs(yaw_rate) < 0.0001)
+    if (fabs(yaw_rate) < error_tolerance)
     {
   		particles[idx_p].x = particles[idx_p].x + velocity*delta_t*cos(particles[idx_p].theta);
 	  	particles[idx_p].y = particles[idx_p].y + velocity*delta_t*sin(particles[idx_p].theta);
@@ -182,35 +137,6 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
     observation->id = min_dist_idx;
   }
 
-  /*
-  for (unsigned idx_obs=0; idx_obs < observations.size(); idx_obs++)
-  {
-    // Set the landmark observation as the current observation
-    LandmarkObs landmark_obs = observations[idx_obs];
-
-    // Initialize the minimum distance to the maximum value
-    // and the map index
-    double min_distance = numeric_limits<double>::max();
-    int map_idx = -1;
-
-    for (unsigned idx_prd=0; idx_prd < predicted.size(); idx_prd++)
-    {
-      // Set the landmark prediction as the current prediction
-      LandmarkObs landmark_prd = predicted[idx_prd];
-      // Calculate the current distance as the distance between observation and prediction
-      double cur_distance = dist(landmark_obs.x, landmark_obs.y, landmark_prd.x, landmark_prd.y);
-
-      // Set the predicted landmark to the nearest observed landmark
-      if (cur_distance < min_distance)
-      {
-        min_distance = cur_distance;
-        map_idx = landmark_obs.id;
-      }
-    }
-
-    observations[idx_obs].id = map_idx;
-  }
-  */
 }
 
 
@@ -298,21 +224,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       }
 
       // Calculate the weight using multivariate Gaussian function
-      //double observation_weight = ( 1/(2*M_PI*std_x*std_y)) * exp( -( pow(prx-obx,2)/(2*pow(std_x,2)) + pow(pry-oby,2)/(2*pow(std_y,2)) ) );
-      //double observation_weight = multi_gauss_prob(std_x, std_y, obx, oby, prx, pry);
-      fin_w *= multi_gauss_prob(std_x, std_y, obx, oby, prx, pry);
-      
-      //cout << observation_weight << endl;
-      //particles[idx_p].weight = particles[idx_p].weight * observation_weight;
-      //particles[idx_p].weight *= multi_gauss_prob(std_x, std_y, obx, oby, prx, pry);
-      //particles[idx_p].weight = 1.0;
+      fin_w *= multi_gauss_prob(std_x, std_y, obx, oby, prx, pry);   
     }
-
-    //cout << fin_w << endl;
     particles[idx_p].weight = fin_w;
-    
-
-
   }
 }
 
